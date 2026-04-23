@@ -1,0 +1,28 @@
+name: Discord Notifications
+
+on:
+  pull_request:
+    types: [opened]
+  push:
+    branches:
+      - main   # можна змінити
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Discord notification
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CONTENT="🚀 **New Pull Request!**\n\n📌 **Title:** ${{ github.event.pull_request.title }}\n👤 **Author:** ${{ github.event.pull_request.user.login }}\n🔗 ${{ github.event.pull_request.html_url }}"
+          else
+            CONTENT="📦 **New Push!**\n\n👤 **User:** ${{ github.actor }}\n🌿 **Branch:** ${{ github.ref_name }}\n🔗 https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          fi
+
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{
+            \"content\": \"$CONTENT\"
+          }" \
+          ${{ secrets.DISCORD_WEBHOOK }}
